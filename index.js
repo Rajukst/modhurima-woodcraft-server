@@ -4,7 +4,7 @@ const { MongoClient } = require("mongodb");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
-
+const ObjectId = require("mongodb").ObjectId;
 app.use(cors());
 app.use(express.json());
 
@@ -20,12 +20,27 @@ async function run() {
   try {
     await client.connect();
     const database = client.db("WoodCraft");
-    const homeProducts = database.collection("home-Product");
-    app.get("/home", async (req, res) => {
-      const products = req.body;
-      const addProducts = await homeProducts.insertOne(products);
-      res.json(addProducts);
-      console.log(addProducts);
+    const totalProducts = database.collection("Products");
+    // creating add product service
+    app.post("/add-product", async (req, res) => {
+      const add = req.body;
+      const product = await totalProducts.insertOne(add);
+      console.log("getting a product", product);
+      res.json(product);
+    });
+    // showing data to ui
+    app.get("/home-product", async (req, res) => {
+      const cursor = totalProducts.find({});
+      const getHomeProduct = await cursor.toArray();
+      res.send(getHomeProduct);
+      console.log(getHomeProduct);
+    });
+    // creating explore page products
+    app.get("/explore-products", async (req, res) => {
+      const cursorTwo = totalProducts.find({});
+      const getExploreProducts = await cursorTwo.toArray();
+      res.send(getExploreProducts);
+      console.log(getExploreProducts);
     });
   } finally {
     // client.close()
